@@ -7,28 +7,31 @@ Run it with root privileges.
 """
 
 import sys
-import os
-import os.path
+from pathlib import Path
 
 
-default_indi_path = "/usr/share/indi"
+DEFAULT_INDI_PATH = "/usr/share/indi"
+SRC_FILE_PATH = Path(__file__)
+XML_FILE_NAME = "indi_pylibcamera.xml"
 
 
-def create_Link(indi_path, overwrite=True):
-    xml_name = "indi_pylibcamera.xml"
-    src = os.path.join(os.path.dirname(__file__), xml_name)
-    dest = os.path.join(indi_path, xml_name)
+def create_Link(indi_path, overwrite=True, mkdir=False):
+    src = SRC_FILE_PATH.parent/XML_FILE_NAME
+    dest = Path(indi_path)/XML_FILE_NAME
     if overwrite:
         try:
-            os.remove(dest)
-        except FileNotFoundError:
-            # file was not existing
-            pass
+            dest.unlink(missing_ok=True)
         except PermissionError:
             print(f'ERROR: You need to run this with root permissions (sudo).')
             return -3
+    if mkdir:
+        try:
+            dest.parent.mkdir(parents=True, exist_ok=True)
+        except PermissionError:
+            print(f'ERROR: Insufficient permissions to create directory {indi_path}.')
+            return -3
     try:
-        os.symlink(src, dest)
+        dest.symlink_to(src)
     except FileExistsError:
         print(f'ERROR: File {dest} exists. Please remove it before running this script.')
         return -1
@@ -79,8 +82,8 @@ def main():
         description="Make settings in INDI to use indi_pylibcamera.",
     )
     parser.add_argument("-s", "--silent", action="store_true", help="run silently")
-    parser.add_argument("-p", "--path", type=str, default=default_indi_path,
-                        help=f'path to INDI driver XMLs, default: {default_indi_path}')
+    parser.add_argument("-p", "--path", type=str, default=DEFAULT_INDI_PATH,
+                        help=f'path to INDI driver XMLs, default: {DEFAULT_INDI_PATH}')
     args = parser.parse_args()
     #
     create_LinkInteractive(interactive=not args.silent, indi_path=args.path)
