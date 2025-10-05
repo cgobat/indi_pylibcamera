@@ -84,7 +84,13 @@ class LoggingVector(ISwitchVector):
             values: dict(propertyName: value) of values to set
         """
         logger.debug(f"logging level action: {values}")
-        super().set_byClient(values = values)
+        for k, v in values.items():
+            for ele in self.elements:
+                if ele.name == k:
+                    ele.value = v
+                    break
+            else:
+                raise KeyError(f"ISwitch '{k}' not valid.")
         self.configure_logger()
 
 
