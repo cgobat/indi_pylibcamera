@@ -188,8 +188,8 @@ class RawFormatVector(ISwitchVector):
     For some cameras the raw format changes binning.
     """
 
-    def __init__(self, parent, CameraThread, do_CameraAdjustments):
-        self.parent=parent
+    def __init__(self, parent: Device, CameraThread: CameraControl, do_CameraAdjustments: bool):
+        self.parent = parent
         self.CameraThread = CameraThread
         self.do_CameraAdjustments = do_CameraAdjustments
         super().__init__(
